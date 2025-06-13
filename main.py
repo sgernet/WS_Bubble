@@ -1,32 +1,33 @@
-import os
 from flask import Flask, request, jsonify
+from textblob import TextBlob
 
-# Flask-App initialisieren
 app = Flask(__name__)
 
-# Home-Route
-@app.route('/')
-def home():
-    return 'Hello Azure'
+@app.route('/analyze', methods=['POST'])
+def analyze_sentiment():
+    # Prüfen, ob JSON vorhanden ist
+    if not request.is_json:
+        return jsonify({'error': 'Bitte sende ein JSON mit dem Schlüssel "text".'}), 400
 
-# Add-Route
-@app.route('/add')
-def add():
-    # Zwei Zahlen aus den Query-Parametern lesen
-    try:
-        a = float(request.args.get('a'))
-        b = float(request.args.get('b'))
-    except (TypeError, ValueError):
-        return jsonify({'error': 'Bitte gültige Parameter a und b angeben.'}), 400
+    data = request.get_json()
+    text = data.get('text', '')
 
-    # Summe berechnen
-    result = a + b
+    if not text:
+        return jsonify({'error': 'Kein Text zur Analyse erhalten.'}), 400
 
-    # Ergebnis als JSON zurückgeben
-    return jsonify({'sum': result})
+    # Sentiment-Analyse mit TextBlob
+    blob = TextBlob(text)
+    polarity = blob.sentiment.polarity
 
-# Start der Anwendung
+    # Einteilung in Kategorien
+    if polarity > 0.1:
+        sentiment = 'Positiv'
+    elif polarity < -0.1:
+        sentiment = 'Negativ'
+    else:
+        sentiment = 'Neutral'
+
+    return jsonify({'sentiment': sentiment, 'polarity': polarity})
+
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
-
+    app.run(debug=True)
