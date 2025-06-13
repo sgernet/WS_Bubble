@@ -4,12 +4,6 @@ from flask import Flask, request, jsonify
 # Flask-App initialisieren
 app = Flask(__name__)
 
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
-
-
 # Home-Route
 @app.route('/')
 def home():
@@ -31,6 +25,8 @@ def add():
     # Ergebnis als JSON zurückgeben
     return jsonify({'sum': result})
 
-# Nur für lokalen Test
+# Start der Anwendung
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)
+
